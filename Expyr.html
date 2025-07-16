@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expyr - Expiry Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .form-section {
+            padding: 30px 20px;
+            background: #f8fafc;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input[type="text"], input[type="date"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .add-btn:active {
+            transform: translateY(0);
+        }
+
+        .items-section {
+            padding: 0 20px 30px;
+        }
+
+        .items-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .items-header h2 {
+            color: #1f2937;
+            font-size: 1.5rem;
+        }
+
+        .clear-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .item.safe {
+            border-left-color: #10b981;
+        }
+
+        .item.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .item.expired {
+            border-left-color: #ef4444;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 1.1rem;
+        }
+
+        .delete-btn {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .item-date {
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+
+        .item-status {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .item.safe .item-status {
+            color: #10b981;
+        }
+
+        .item.warning .item-status {
+            color: #f59e0b;
+        }
+
+        .item.expired .item-status {
+            color: #ef4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .stat-card.safe .stat-number {
+            color: #10b981;
+        }
+
+        .stat-card.warning .stat-number {
+            color: #f59e0b;
+        }
+
+        .stat-card.expired .stat-number {
+            color: #ef4444;
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .form-section, .items-section {
+                padding: 20px 15px;
+            }
+            
+            .stats {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Expyr</h1>
+            <p>Keep track of your items' expiry dates</p>
+        </div>
+
+        <div class="form-section">
+            <div id="alert-container"></div>
+            
+            <div class="form-group">
+                <label for="itemName">Item Name</label>
+                <input type="text" id="itemName" placeholder="Enter item name..." maxlength="50">
+            </div>
+            
+            <div class="form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input type="date" id="expiryDate">
+            </div>
+            
+            <button class="add-btn" onclick="addItem()">
+                ➕ Add Item
+            </button>
+        </div>
+
+        <div class="items-section">
+            <div class="stats" id="stats">
+                <div class="stat-card safe">
+                    <div class="stat-number" id="safeCount">0</div>
+                    <div class="stat-label">Safe</div>
+                </div>
+                <div class="stat-card warning">
+                    <div class="stat-number" id="warningCount">0</div>
+                    <div class="stat-label">Warning</div>
+                </div>
+                <div class="stat-card expired">
+                    <div class="stat-number" id="expiredCount">0</div>
+                    <div class="stat-label">Expired</div>
+                </div>
+            </div>
+
+            <div class="items-header">
+                <h2>Your Items</h2>
+                <button class="clear-btn" onclick="clearAllItems()">Clear All</button>
+            </div>
+            
+            <div id="itemList" class="item-list"></div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadItems();
+            
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('expiryDate').min = today;
+            
+            // Add enter key support
+            document.getElementById('itemName').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            document.getElementById('expiryDate').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        });
+
+        function addItem() {
+            const itemName = document.getElementById('itemName').value.trim();
+            const expiryDate = document.getElementById('expiryDate').value;
+            
+            // Validation
+            if (!itemName) {
+                showAlert('Please enter an item name', 'error');
+                return;
+            }
+            
+            if (!expiryDate) {
+                showAlert('Please select an expiry date', 'error');
+                return;
+            }
+            
+            // Check if date is in the past
+            const selectedDate = new Date(expiryDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            if (selectedDate < today) {
+                showAlert('Expiry date cannot be in the past', 'error');
+                return;
+            }
+            
+            // Create item object
+            const item = {
+                id: Date.now(),
+                name: itemName,
+                expiryDate: expiryDate,
+                dateAdded: new Date().toISOString()
+            };
+            
+            // Get existing items from localStorage
+            const items = getItems();
+            
+            // Check for duplicate names
+            if (items.some(existingItem => existingItem.name.toLowerCase() === itemName.toLowerCase())) {
+                showAlert('An item with this name already exists', 'error');
+                return;
+            }
+            
+            // Add new item
+            items.push(item);
+            saveItems(items);
+            
+            // Clear form
+            document.getElementById('itemName').value = '';
+            document.getElementById('expiryDate').value = '';
+            
+            // Refresh display
+            loadItems();
+            showAlert('Item added successfully!', 'success');
+        }
+
+        function deleteItem(id) {
+            if (confirm('Are you sure you want to delete this item?')) {
+                const items = getItems().filter(item => item.id !== id);
+                saveItems(items);
+                loadItems();
+                showAlert('Item deleted successfully!', 'success');
+            }
+        }
+
+        function clearAllItems() {
+            if (confirm('Are you sure you want to delete all items? This action cannot be undone.')) {
+                localStorage.removeItem('expiryItems');
+                loadItems();
+                showAlert('All items cleared!', 'success');
+            }
+        }
+
+        function getItems() {
+            const items = localStorage.getItem('expiryItems');
+            return items ? JSON.parse(items) : [];
+        }
+
+        function saveItems(items) {
+            localStorage.setItem('expiryItems', JSON.stringify(items));
+        }
+
+        function loadItems() {
+            const items = getItems();
+            const itemList = document.getElementById('itemList');
+            
+            if (items.length === 0) {
+                itemList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h3>No items yet</h3>
+                        <p>Add your first item to get started!</p>
+                    </div>
+                `;
+                updateStats(0, 0, 0);
+                return;
+            }
+            
+            // Sort items by expiry date
+            items.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
+            
+            let safeCount = 0;
+            let warningCount = 0;
+            let expiredCount = 0;
+            
+            itemList.innerHTML = items.map(item => {
+                const status = getExpiryStatus(item.expiryDate);
+                const statusText = getStatusText(status);
+                
+                if (status === 'safe') safeCount++;
+                else if (status === 'warning') warningCount++;
+                else expiredCount++;
+                
+                return `
+                    <div class="item ${status}">
+                        <div class="item-header">
+                            <div class="item-name">${escapeHtml(item.name)}</div>
+                            <button class="delete-btn" onclick="deleteItem(${item.id})" title="Delete item">×</button>
+                        </div>
+                        <div class="item-date">Expires: ${formatDate(item.expiryDate)}</div>
+                        <div class="item-status">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateStats(safeCount, warningCount, expiredCount);
+        }
+
+        function getExpiryStatus(expiryDate) {
+            const today = new Date();
+            const expiry = new Date(expiryDate);
+            const timeDiff = expiry - today;
+            const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff < 0) return 'expired';
+            if (daysDiff <= 7) return 'warning';
+            return 'safe';
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 'expired': return '❌ Expired';
+                case 'warning': return '⚠️ Expires soon';
+                case 'safe': return '✅ Safe';
+                default: return '';
+            }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function updateStats(safe, warning, expired) {
+            document.getElementById('safeCount').textContent = safe;
+            document.getElementById('warningCount').textContent = warning;
+            document.getElementById('expiredCount').textContent = expired;
+        }
+
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = message;
+            
+            alertContainer.innerHTML = '';
+            alertContainer.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
